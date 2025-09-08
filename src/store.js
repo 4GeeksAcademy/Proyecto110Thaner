@@ -1,32 +1,66 @@
-export const initialStore=()=>{
-  return{
-    message: null,
-    todos: [
-      {
-        id: 1,
-        title: "Make the bed",
-        background: null,
-      },
-      {
-        id: 2,
-        title: "Do my homework",
-        background: null,
-      }
-    ]
-  }
-}
+
+const getInitialFavorites = () => {
+  const saved = localStorage.getItem("favorites");
+  return saved ? JSON.parse(saved) : [];
+};
+
+export const initialStore = () => {
+  return {
+    people: [],
+    planets: [],
+    vehicles: [],
+    favorites: getInitialFavorites() 
+  };
+};
 
 export default function storeReducer(store, action = {}) {
-  switch(action.type){
-    case 'add_task':
+  if (action.type === "set-people") {
+    return {
+      ...store,
+      people: action.payload
+    };
+  }
 
-      const { id,  color } = action.payload
+  if (action.type === "set-planets") {
+    return {
+      ...store,
+      planets: action.payload
+    };
+  }
 
-      return {
-        ...store,
-        todos: store.todos.map((todo) => (todo.id === id ? { ...todo, background: color } : todo))
-      };
-    default:
-      throw Error('Unknown action.');
-  }    
+  if (action.type === "set-vehicles") {
+    return {
+      ...store,
+      vehicles: action.payload
+    };
+  }
+
+  if (action.type === "add-favorite") {
+    const exists = store.favorites.some(
+      fav => fav.id === action.payload.id && fav.category === action.payload.category
+    );
+    if (exists) return store;
+
+    const updated = [...store.favorites, action.payload];
+    localStorage.setItem("favorites", JSON.stringify(updated));
+
+    return {
+      ...store,
+      favorites: updated
+    };
+  }
+
+  if (action.type === "remove-favorite") {
+    const updated = store.favorites.filter(
+      fav => !(fav.id === action.payload.id && fav.category === action.payload.category)
+    );
+    localStorage.setItem("favorites", JSON.stringify(updated));
+
+    return {
+      ...store,
+      favorites: updated
+    };
+  }
+
+  return store; 
 }
